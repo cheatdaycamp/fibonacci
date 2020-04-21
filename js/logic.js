@@ -8,8 +8,12 @@ class CalculateFibonacci {
     this.fiboResponse;
     this.cardText = this.cardBody.firstElementChild.firstElementChild;
     this.button.addEventListener("click", this.launchSearch);
+    this.input.addEventListener('keyup', this.checkString)
   }
 
+  checkString = ()=>{
+    this.input.value ? this.button.disabled = false : this.button.disabled = true
+  }
   launchSearch = async () => {
     this.toggleVisible(this.cardBody, false);
     this.toggleVisible(this.spinner, true); //turn on
@@ -37,7 +41,7 @@ class CalculateFibonacci {
       this.cardText.innerHTML = `The Fibonacci number of <strong>${this.fiboResponse.number}</strong> is:
       <strong>${this.fiboResponse.result}</strong>`;
     } else {
-      this.cardText.innerHTML = "COCA";
+      this.cardText.innerHTML = "Please insert an integer number";
     }
   }
 

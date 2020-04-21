@@ -1,19 +1,58 @@
 class CalculateFibonacci {
-  constructor(button, input, cardBody, useServer, spinner) {
+  constructor(button, input, cardBody, useServer, spinner, serverCards) {
     this.button = button;
     this.input = input;
     this.useServer = useServer;
     this.cardBody = cardBody;
     this.spinner = spinner;
-    this.fiboResponse;
+    this.serverCards = serverCards.firstElementChild
     this.cardText = this.cardBody.firstElementChild.firstElementChild;
-    this.button.addEventListener("click", this.launchSearch);
-    this.input.addEventListener('keyup', this.checkString)
+    this.fiboResponse;
+    this.serverData, this.button.addEventListener("click", this.launchSearch);
+    this.input.addEventListener("keyup", this.checkString);
+    this.fetchOnLoad();
+    console.log(this.serverCards)
   }
 
-  checkString = ()=>{
-    this.input.value ? this.button.disabled = false : this.button.disabled = true
-  }
+  fetchOnLoad = () => {
+    const fetchIt = async () => {
+      let url = `http://localhost:5050/getFibonacciResults `;
+      let response = await fetch(url)
+        .then(async (response) => {
+          if (response.ok) {
+            return response.json();
+          } else if (response.status === 400) {
+            return response.text();
+          }
+        })
+        .catch((error) => {
+          return error;
+        });
+      console.log(response);
+      this.serverData = response;
+      this.createList();
+    };
+    fetchIt();
+  };
+
+  createList = () => {
+    const { results } = this.serverData;
+    if (results.length) {
+      for (let number of results) {
+        let newLi = document.createElement("li");
+        newLi.className = "list-group-item";
+        newLi.innerHTML = `The Fibonacci Number of <b>${number.number}</b> is <b>${number.result}</b>`
+        this.serverCards.append(newLi)
+      }
+    }
+  };
+
+  checkString = () => {
+    this.input.value
+      ? (this.button.disabled = false)
+      : (this.button.disabled = true);
+  };
+
   launchSearch = async () => {
     this.toggleVisible(this.cardBody, false);
     this.toggleVisible(this.spinner, true); //turn on
@@ -87,7 +126,7 @@ class CalculateFibonacci {
         createdDate: Date.now(),
       };
     } else {
-      this.fiboResponse = 'Number must be equal or higher than 0'
+      this.fiboResponse = "Number must be equal or higher than 0";
     }
   };
 
@@ -121,5 +160,13 @@ window.onload = (() => {
   const cardBody = document.querySelector(".card-holder");
   const useServer = document.getElementById("use-server");
   const spinner = document.getElementById("spinner");
-  new CalculateFibonacci(button, input, cardBody, useServer, spinner);
+  const serverCards = document.getElementById("server-cards");
+  new CalculateFibonacci(
+    button,
+    input,
+    cardBody,
+    useServer,
+    spinner,
+    serverCards
+  );
 })();

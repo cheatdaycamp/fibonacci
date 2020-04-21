@@ -5,13 +5,13 @@ class CalculateFibonacci {
     this.useServer = useServer;
     this.cardBody = cardBody;
     this.spinner = spinner;
-    this.serverCards = serverCards.firstElementChild
+    this.serverCards = serverCards;
     this.cardText = this.cardBody.firstElementChild.firstElementChild;
     this.fiboResponse;
     this.serverData, this.button.addEventListener("click", this.launchSearch);
     this.input.addEventListener("keyup", this.checkString);
     this.fetchOnLoad();
-    console.log(this.serverCards)
+    console.log(this.serverCards);
   }
 
   fetchOnLoad = () => {
@@ -31,18 +31,20 @@ class CalculateFibonacci {
       console.log(response);
       this.serverData = response;
       this.createList();
+      this.toggleVisible(this.serverCards, true);
     };
     fetchIt();
   };
 
   createList = () => {
+    console.log(this.serverCards)
     const { results } = this.serverData;
     if (results.length) {
       for (let number of results) {
         let newLi = document.createElement("li");
         newLi.className = "list-group-item";
-        newLi.innerHTML = `The Fibonacci Number of <b>${number.number}</b> is <b>${number.result}</b>`
-        this.serverCards.append(newLi)
+        newLi.innerHTML = `The Fibonacci Number of <b>${number.number}</b> is <b>${number.result}</b>`;
+        this.serverCards.querySelector('#server-items').append(newLi);
       }
     }
   };

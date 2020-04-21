@@ -114,9 +114,17 @@
             id="use-server"
             checked
           />
-          <label class="form-check-label" for="use-erver">
+          <label class="form-check-label text-nowrap" for="use-erver">
             Use Server & Save Calculation
           </label>
+          <span class="ml-5 text-nowrap">Order by: </span>
+            <select id="sort-by" class="form-control ml-3">
+              <option selected="selected">Asc date</option>
+              <option>Desc date</option>
+              <option>Higher Value</option>
+              <option>Lower Value</option>
+            </select> 
+          </div>
         </div>
       </div>
     </form>
@@ -138,7 +146,14 @@
     </div>
 
     <div class="list-group-flush d-flex flex-column" id="server-cards">
-        <ul id="server-items" class="list-group style-2 p-3 mt-3"></ul>
+      <div class="container-fluid mb-3 d-none" id="spinner-2">
+        <div class="row d-flex justify-content-center">
+          <div class="spinner-grow text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+      <ul id="server-items" class="list-group style-2 p-3 m-3"></ul>
     </div>
 
     <script

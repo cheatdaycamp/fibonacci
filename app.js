@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongo = require("mongodb");
+const path = require("path");
 
 app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
 
 const MongoClient = mongo.MongoClient;
 const dbName = "Fibonacci";
@@ -74,7 +76,7 @@ app.get("/getFibonacciResults", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello coder... you have reached the fibonacci server 😈");
+  res.sendFile(path.join(public, "index.html"));
 });
 
 const PORT = process.env.PORT || 5050;

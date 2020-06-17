@@ -21,36 +21,31 @@ class CalculateFibonacci {
       this.button.addEventListener("click", this.calculateNumber);
     this.input.addEventListener("change", this.checkString);
     this.input.addEventListener("keyup", this.checkString);
-    this.sortBy.addEventListener("change", this.sortDB);
+    this.sortBy.addEventListener("change", this.sortDB.bind(this));
     this.showDBTable();
   }
 
-  showDBTable = () => {
+  showDBTable() {
     this.toggleVisible(this.serverCards.querySelector("#server-items"), false);
     this.toggleVisible(this.serverCards.querySelector("#spinner-2"), true);
     const fetchIt = async () => {
-      let url = `http://localhost:5050/getFibonacciResults `;
+      let url = `http://localhost:5050/getFibonacciResults`;
       let response = await fetch(url)
         .then(async (response) => {
-          if (response.ok) {
-            return response.json();
-          }
+          if (response.ok) return response.json();
         })
-        .catch((error) => {
-          return error;
-        });
-      this.serverData = response.results;
+        .catch((error) => error);
+      this.serverData = response;
       this.sortDB();
       this.toggleVisible(this.serverCards.querySelector("#spinner-2"), false);
       this.toggleVisible(this.serverCards.querySelector("#server-items"), true);
     };
     fetchIt();
-  };
+  }
 
-  sortDB = () => {
+  sortDB() {
     let sortBy = this.sortBy.options[this.sortBy.selectedIndex].text;
     if (!this.serverData) {
-      console.log('here')
       this.toggleVisible(this.spinner, false);
       return;
     }
@@ -77,9 +72,9 @@ class CalculateFibonacci {
         break;
     }
     this.createList();
-  };
+  }
 
-  createList = () => {
+  createList = (data) => {
     this.serverCards.querySelector("#server-items").innerHTML = "";
     if (this.serverData.length) {
       for (let number of this.serverData) {

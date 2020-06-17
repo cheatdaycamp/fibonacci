@@ -1,12 +1,26 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+var mongo = require("mongodb");
 
 app.use(cors());
 
 const Datastore = require("nedb");
 const db = new Datastore({ filename: "./storage.db" });
 db.loadDatabase();
+
+var MongoClient = require("mongodb").MongoClient;
+var url = "mongodb://localhost:27017/Fibonacci";
+
+MongoClient.connect(url, function (err, db) {
+  if (err) throw err;
+  var dbo = db.db("Fibonacci");
+  dbo.createCollection("RequestedNumbers", function (err, res) {
+    if (err) throw err;
+    console.log("Collection created!");
+    db.close();
+  });
+});
 
 function wait(time) {
   return new Promise((resolve) => {
@@ -26,12 +40,23 @@ function fibonacci(n, memo) {
 }
 
 function writeToDB(payload) {
-  db.insert(payload, (err) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.send(obj);
-    }
+  // db.insert(payload, (err) => {
+  //   if (err) {
+  //     res.status(500).send(err);
+  //   } else {
+  //     res.send(obj);
+  //   }
+  // });
+
+  MongoClient.connect(url, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db("Fibonacci");
+    var myobj = payload;
+    dbo.collection("RequestedNumbers").insertOne(myobj, function (err, res) {
+      if (err) throw err;
+      console.log("1 document inserted");
+      db.close();
+    });
   });
 }
 

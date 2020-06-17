@@ -49,6 +49,11 @@ class CalculateFibonacci {
 
   sortDB = () => {
     let sortBy = this.sortBy.options[this.sortBy.selectedIndex].text;
+    if (!this.serverData) {
+      console.log('here')
+      this.toggleVisible(this.spinner, false);
+      return;
+    }
     switch (sortBy) {
       case "Asc date":
         this.serverData.sort((a, b) => {

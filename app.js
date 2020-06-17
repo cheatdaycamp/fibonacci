@@ -1,21 +1,19 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-var mongo = require("mongodb");
+const mongo = require("mongodb");
 
 app.use(cors());
 
-const Datastore = require("nedb");
-const db = new Datastore({ filename: "./storage.db" });
-db.loadDatabase();
-
-var MongoClient = require("mongodb").MongoClient;
-var url = "mongodb://localhost:27017/Fibonacci";
+const MongoClient = mongo.MongoClient;
+const dbName = "Fibonacci";
+const collection = "RequestedNumbers";
+const url = `mongodb://localhost:27017/${dbName}`;
 
 MongoClient.connect(url, function (err, db) {
   if (err) throw err;
-  var dbo = db.db("Fibonacci");
-  dbo.createCollection("RequestedNumbers", function (err, res) {
+  var dbo = db.db(dbName);
+  dbo.createCollection(collection, function (err, res) {
     if (err) throw err;
     console.log("Collection created!");
     db.close();
@@ -40,19 +38,10 @@ function fibonacci(n, memo) {
 }
 
 function writeToDB(payload) {
-  // db.insert(payload, (err) => {
-  //   if (err) {
-  //     res.status(500).send(err);
-  //   } else {
-  //     res.send(obj);
-  //   }
-  // });
-
   MongoClient.connect(url, function (err, db) {
     if (err) throw err;
-    var dbo = db.db("Fibonacci");
-    var myobj = payload;
-    dbo.collection("RequestedNumbers").insertOne(myobj, function (err, res) {
+    const dbo = db.db(dbName);
+    dbo.collection(collection).insertOne(payload, function (err, res) {
       if (err) throw err;
       console.log("1 document inserted");
       db.close();
@@ -60,6 +49,17 @@ function writeToDB(payload) {
   });
 }
 
+async function returnFirst() {
+  let client = await MongoClient.connect(url, async function (err, db) {
+    if (err) throw err;
+    var dbo = db.db(dbName);
+    await dbo.collection(collection).find().limit(-1).sort({ $natural: -1 });
+  });
+  console.log("G");
+  console.log(client);
+}
+
+returnFirst();
 app.get("/fibonacci/:number", async (req, res) => {
   await wait(400);
   const number = +req.params.number;
@@ -69,25 +69,35 @@ app.get("/fibonacci/:number", async (req, res) => {
   if (number < 0) return res.status(400).send("number can't be smaller than 0");
   const result = fibonacci(number);
   const obj = { number, result, createdDate: Date.now() };
+  console.log(obj);
   writeToDB(obj);
+  return res.status(200).send(obj);
 });
 
 app.get("/getFibonacciResults", async (req, res) => {
   await wait(600);
-  db.find({}, (err, docs) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.send({ results: docs });
-    }
+  let values;
+  MongoClient.connect(url, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db(dbName);
+    dbo
+      .collection(collection)
+      .find({})
+      .toArray(function (err, result) {
+        if (err) throw err;
+        console.log(result);
+        values = result;
+        db.close();
+      });
   });
+  return res.status(200).send(values || 'HOLA');
 });
 
 app.get("/", (req, res) => {
   res.send("Hello coder... you have reached the fibonacci server 😈");
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}. \nPress Ctrl+C to quit.`);
 });

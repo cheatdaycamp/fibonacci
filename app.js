@@ -10,6 +10,7 @@ const dbName = "Fibonacci";
 const collection = "RequestedNumbers";
 const url = `mongodb://localhost:27017/${dbName}`;
 
+//connecting
 MongoClient.connect(url, function (err, db) {
   if (err) throw err;
   var dbo = db.db(dbName);
@@ -31,14 +32,13 @@ function fibonacci(n, memo) {
   if (n in memo) {
     return memo[n];
   }
-  if (n <= 1) {
-    return 1;
-  }
+  if (n === 0) return 0;
+  if (n <= 1) return 1;
   return (memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo));
 }
 
 function writeToDB(payload) {
-  MongoClient.connect(url, function (err, db) {
+  MongoClient.connect(url, (err, db) => {
     if (err) throw err;
     const dbo = db.db(dbName);
     dbo.collection(collection).insertOne(payload, function (err, res) {
@@ -46,6 +46,20 @@ function writeToDB(payload) {
       console.log("1 document inserted");
       db.close();
     });
+  });
+}
+function returnAll() {
+  return MongoClient.connect(url, (err, client) => {
+    if (err) throw err;
+    const dbo = client.db(dbName);
+     dbo
+      .collection(collection)
+      .find()
+      .toArray((err, docs) => {
+        if (err) throw err;
+        console.log("1", docs);
+      });
+    return value;
   });
 }
 
@@ -59,7 +73,6 @@ async function returnFirst() {
   console.log(client);
 }
 
-returnFirst();
 app.get("/fibonacci/:number", async (req, res) => {
   await wait(400);
   const number = +req.params.number;
@@ -76,21 +89,7 @@ app.get("/fibonacci/:number", async (req, res) => {
 
 app.get("/getFibonacciResults", async (req, res) => {
   await wait(600);
-  let values;
-  MongoClient.connect(url, function (err, db) {
-    if (err) throw err;
-    var dbo = db.db(dbName);
-    dbo
-      .collection(collection)
-      .find({})
-      .toArray(function (err, result) {
-        if (err) throw err;
-        console.log(result);
-        values = result;
-        db.close();
-      });
-  });
-  return res.status(200).send(values || 'HOLA');
+  return res.status(200).send('hello');
 });
 
 app.get("/", (req, res) => {

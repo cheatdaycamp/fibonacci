@@ -1,50 +1,53 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 
 app.use(cors());
 
-const Datastore = require('nedb');
-const db = new Datastore({ filename: './storage.db' });
+const Datastore = require("nedb");
+const db = new Datastore({ filename: "./storage.db" });
 db.loadDatabase();
-
-function fibonacci(n) {
-  if (n < 2) {
-    return n;
-  }
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
 
 function wait(time) {
   return new Promise((resolve) => {
     setTimeout(resolve, time);
-  })
+  });
 }
 
-app.get('/fibonacci/:number', async (req, res) => {
-  await wait(600);
-  const number = +req.params.number;
-  if (number === 42) {
-    return res.status(400).send('42 is the meaning of life');
+function fibonacci(n, memo) {
+  memo = memo || {};
+  if (n in memo) {
+    return memo[n];
   }
-  if (number > 50) {
-    return res.status(400).send("number can't be bigger than 50");
+  if (n <= 1) {
+    return 1;
   }
-  if (number < 1) {
-    return res.status(400).send("number can't be smaller than 1");
-  }
-  const result = fibonacci(number);
-  const obj = { number, result, createdDate: Date.now() };
-  db.insert(obj, (err) => {
+  return (memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo));
+}
+
+function writeToDB(payload) {
+  db.insert(payload, (err) => {
     if (err) {
       res.status(500).send(err);
     } else {
       res.send(obj);
     }
   });
+}
+
+app.get("/fibonacci/:number", async (req, res) => {
+  await wait(400);
+  const number = +req.params.number;
+  if (number === 42) return res.status(400).send("42 is the meaning of life");
+  if (number > 50)
+    return res.status(400).send("number can't be bigger than 50");
+  if (number < 0) return res.status(400).send("number can't be smaller than 0");
+  const result = fibonacci(number);
+  const obj = { number, result, createdDate: Date.now() };
+  writeToDB(obj);
 });
 
-app.get('/getFibonacciResults', async (req, res) => {
+app.get("/getFibonacciResults", async (req, res) => {
   await wait(600);
   db.find({}, (err, docs) => {
     if (err) {
@@ -52,11 +55,14 @@ app.get('/getFibonacciResults', async (req, res) => {
     } else {
       res.send({ results: docs });
     }
-  })
+  });
 });
 
-const PORT = 5050;
-app.listen(5050, () => {
-  console.log(`App listening on port ${PORT}`);
-  console.log('Press Ctrl+C to quit.');
+app.get("/", (req, res) => {
+  res.send("Hello coder... you have reached the fibonacci server 😈");
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}. \nPress Ctrl+C to quit.`);
 });

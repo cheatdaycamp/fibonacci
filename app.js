@@ -37,36 +37,6 @@ function fibonacci(n, memo) {
   return (memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo));
 }
 
-function writeToDB(payload) {
-  MongoClient.connect(url, (err, db) => {
-    if (err) throw err;
-    const dbo = db.db(dbName);
-    dbo.collection(collection).insertOne(payload, function (err, res) {
-      if (err) throw err;
-      console.log("1 document inserted");
-      db.close();
-    });
-  });
-}
-function returnAll() {}
-
-async function returnFirst() {
-  let client = await MongoClient.connect(url, async function (err, db) {
-    if (err) throw err;
-    var dbo = db.db(dbName);
-    let caca = await dbo
-      .collection(collection)
-      .find()
-      .limit(-1)
-      .sort({ $natural: -1 })
-      .toArray();
-    console.log("caca", caca);
-  });
-  console.log("G");
-  console.log(client);
-  return client;
-}
-
 app.get("/fibonacci/:number", async (req, res) => {
   await wait(400);
   const number = +req.params.number;
@@ -75,10 +45,16 @@ app.get("/fibonacci/:number", async (req, res) => {
     return res.status(400).send("number can't be bigger than 50");
   if (number < 0) return res.status(400).send("number can't be smaller than 0");
   const result = fibonacci(number);
-  const obj = { number, result, createdDate: Date.now() };
-  console.log(obj);
-  writeToDB(obj);
-  return res.status(200).send(obj);
+  const payload = { number, result, createdDate: Date.now() };
+  console.log(payload);
+  MongoClient.connect(url, (err, db) => {
+    if (err) throw err;
+    const dbo = db.db(dbName);
+    dbo.collection(collection).insertOne(payload, (err, response) => {
+      if (err) throw err;
+      return res.status(200).send(response.ops[0]);
+    });
+  });
 });
 
 app.get("/getFibonacciResults", async (req, res) => {
@@ -92,7 +68,7 @@ app.get("/getFibonacciResults", async (req, res) => {
       .toArray((err, docs) => {
         if (err) throw err;
         console.log(docs);
-        return res.status(200).send(docs)
+        return res.status(200).send(docs);
       });
   });
 });

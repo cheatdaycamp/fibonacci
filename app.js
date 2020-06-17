@@ -48,29 +48,23 @@ function writeToDB(payload) {
     });
   });
 }
-function returnAll() {
-  return MongoClient.connect(url, (err, client) => {
-    if (err) throw err;
-    const dbo = client.db(dbName);
-     dbo
-      .collection(collection)
-      .find()
-      .toArray((err, docs) => {
-        if (err) throw err;
-        console.log("1", docs);
-      });
-    return value;
-  });
-}
+function returnAll() {}
 
 async function returnFirst() {
   let client = await MongoClient.connect(url, async function (err, db) {
     if (err) throw err;
     var dbo = db.db(dbName);
-    await dbo.collection(collection).find().limit(-1).sort({ $natural: -1 });
+    let caca = await dbo
+      .collection(collection)
+      .find()
+      .limit(-1)
+      .sort({ $natural: -1 })
+      .toArray();
+    console.log("caca", caca);
   });
   console.log("G");
   console.log(client);
+  return client;
 }
 
 app.get("/fibonacci/:number", async (req, res) => {
@@ -89,7 +83,18 @@ app.get("/fibonacci/:number", async (req, res) => {
 
 app.get("/getFibonacciResults", async (req, res) => {
   await wait(600);
-  return res.status(200).send('hello');
+  data = await MongoClient.connect(url, (err, client) => {
+    if (err) throw err;
+    const dbo = client.db(dbName);
+    dbo
+      .collection(collection)
+      .find()
+      .toArray((err, docs) => {
+        if (err) throw err;
+        console.log(docs);
+        return res.status(200).send(docs)
+      });
+  });
 });
 
 app.get("/", (req, res) => {

@@ -120,6 +120,7 @@ class CalculateFibonacci {
       checkCardBodyStatus,
       fillText,
       sortDB,
+      createList,
     } = this;
     toggleVisible(cardBody, false);
     toggleVisible(spinner, true);
@@ -127,7 +128,6 @@ class CalculateFibonacci {
       if (shouldUseServer()) {
         await callServer(input.value);
         showDBTable();
-        sortDB();
       } else {
         uselocal();
       }

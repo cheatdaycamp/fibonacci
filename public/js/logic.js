@@ -17,75 +17,84 @@ class CalculateFibonacci {
     this.serverCards = serverCards;
     this.cardText = this.cardBody.firstElementChild.firstElementChild;
     this.fiboResponse;
-    this.serverData,
-      this.button.addEventListener("click", this.calculateNumber);
+    this.serverData;
+    this.button.addEventListener("click", this.calculateNumber);
     this.input.addEventListener("change", this.checkString);
     this.input.addEventListener("keyup", this.checkString);
     this.sortBy.addEventListener("change", this.sortDB.bind(this));
     this.showDBTable();
   }
 
-  showDBTable() {
-    this.toggleVisible(this.serverCards.querySelector("#server-items"), false);
-    this.toggleVisible(this.serverCards.querySelector("#spinner-2"), true);
-    (async () => this.fetchResults)();
-    this.sortDB();
-    this.createList();
-    this.toggleVisible(this.serverCards.querySelector("#spinner-2"), false);
-    this.toggleVisible(this.serverCards.querySelector("#server-items"), true);
-  }
+  showDBTable = async () => {
+    const {
+      toggleVisible,
+      sortDB,
+      createList,
+      fetchResults,
+      serverCards,
+    } = this;
+    toggleVisible(serverCards.querySelector("#server-items"), false);
+    toggleVisible(serverCards.querySelector("#spinner-2"), true);
+    await fetchResults();
+    sortDB();
+    createList();
+    toggleVisible(serverCards.querySelector("#spinner-2"), false);
+    toggleVisible(serverCards.querySelector("#server-items"), true);
+  };
 
-  async fetchResults() {
+  fetchResults = async () => {
     let url = `http://localhost:5050/getFibonacciResults`;
     let response = await fetch(url)
-      .then(async (response) => {
+      .then((response) => {
         if (response.ok) return response.json();
       })
       .catch((error) => error);
     this.serverData = response;
-  }
+  };
 
-  sortDB() {
-    let sortBy = this.sortBy.options[this.sortBy.selectedIndex].text;
-    if (!this.serverData) {
-      this.toggleVisible(this.spinner, false);
+  sortDB = () => {
+    const { sortBy, serverData, toggleVisible, spinner } = this;
+    let shouldSortBy = sortBy.options[this.sortBy.selectedIndex].text;
+    if (!serverData) {
+      toggleVisible(spinner, false);
       return;
     }
-    switch (sortBy) {
+    switch (shouldSortBy) {
       case "Asc date":
-        this.serverData.sort((a, b) => {
+        serverData.sort((a, b) => {
           return a.createdDate - b.createdDate;
         });
         break;
       case "Desc date":
-        this.serverData.sort((a, b) => {
+        serverData.sort((a, b) => {
           return b.createdDate - a.createdDate;
         });
         break;
       case "Higher Value":
-        this.serverData.sort((a, b) => {
+        serverData.sort((a, b) => {
           return b.number - a.number;
         });
         break;
       case "Lower Value":
-        this.serverData.sort((a, b) => {
+        serverData.sort((a, b) => {
           return a.number - b.number;
         });
         break;
     }
-  }
+  };
 
   createList = () => {
-    this.serverCards.querySelector("#server-items").innerHTML = "";
-    if (this.serverData.length) {
-      for (let number of this.serverData) {
+    const { serverCards, serverData } = this;
+    serverCards.querySelector("#server-items").innerHTML = "";
+    if (serverData.length) {
+      for (let number of serverData) {
         let date = new Date(number.createdDate).toISOString();
         let formated =
           date.split("T")[0] + " - " + date.split("T")[1].slice(0, 8);
         let newLi = document.createElement("li");
         newLi.className = "list-group-item";
         newLi.innerHTML = `${formated} The Fibonacci Number of <b>${number.number}</b> is <b>${number.result}</b>`;
-        this.serverCards.querySelector("#server-items").append(newLi);
+        serverCards.querySelector("#server-items").append(newLi);
       }
     }
   };
@@ -110,39 +119,34 @@ class CalculateFibonacci {
       raiseMax50Error,
       checkCardBodyStatus,
       fillText,
+      sortDB,
     } = this;
     toggleVisible(cardBody, false);
-    toggleVisible(sinner, true);
-    const shouldUseServer = shouldUseServer();
-    const isInputLessthan50 = checkInputLessThan50();
-
-    if (isInputLessthan50) {
-      if (shouldUseServer) {
+    toggleVisible(spinner, true);
+    if (checkInputLessThan50()) {
+      if (shouldUseServer()) {
         await callServer(input.value);
         showDBTable();
+        sortDB();
       } else {
         uselocal();
       }
     } else {
       raiseMax50Error();
     }
-
     toggleVisible(spinner, false); //turn on
     fillText();
     checkCardBodyStatus();
   };
 
-  fillText() {
+  fillText = () => {
     const { fiboResponse, cardText } = this;
-    if (typeof fiboResponse === "string") {
-      this.cardText.innerText = fiboResponse;
-    } else if (fiboResponse.result) {
-      this.cardText.innerText = `The Fibonacci number of <strong>${fiboResponse.number}</strong> is:
+    if (typeof fiboResponse === "string") cardText.innerHTML = fiboResponse;
+    else if (fiboResponse.result) {
+      cardText.innerHTML = `The Fibonacci number of <strong>${fiboResponse.number}</strong> is:
       <strong>${fiboResponse.result}</strong>`;
-    } else {
-      cardText.innerText = "Please insert an integer number";
-    }
-  }
+    } else cardText.innerHTML = "Please insert an integer number";
+  };
 
   checkCardBodyStatus = () => {
     this.cardBody.classList.contains("d-none") &&
@@ -158,8 +162,7 @@ class CalculateFibonacci {
   };
 
   toggleVisible = (element, bool) => {
-    if (bool) element.classList.remove("d-none");
-    else element.classList.add("d-none");
+    bool ? element.classList.remove("d-none") : element.classList.add("d-none");
   };
 
   shouldUseServer = () => {
@@ -167,7 +170,7 @@ class CalculateFibonacci {
   };
 
   uselocal = async () => {
-    const {input, calculateFibonacci, fiboResponse}
+    const { input, calculateFibonacci, fiboResponse } = this;
     if (input.value > 0) {
       let results = calculateFibonacci(input.value);
       fiboResponse = {
@@ -175,9 +178,7 @@ class CalculateFibonacci {
         result: results,
         createdDate: Date.now(),
       };
-    } else {
-      fiboResponse = "Number must be equal or higher than 0";
-    }
+    } else fiboResponse = "Number must be equal or higher than 0";
   };
 
   calculateFibonacci(n, memo) {
@@ -193,7 +194,7 @@ class CalculateFibonacci {
     this.fiboResponse = await fetch(url)
       .then(async (response) => {
         if (response.ok) return response.json();
-        else if (response.status === 400) return response.text()
+        else if (response.status === 400) return response.text();
       })
       .catch((error) => {
         console.log(error);

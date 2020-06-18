@@ -28,19 +28,21 @@ class CalculateFibonacci {
   showDBTable() {
     this.toggleVisible(this.serverCards.querySelector("#server-items"), false);
     this.toggleVisible(this.serverCards.querySelector("#spinner-2"), true);
-    const fetchIt = async () => {
-      let url = `http://localhost:5050/getFibonacciResults`;
-      let response = await fetch(url)
-        .then(async (response) => {
-          if (response.ok) return response.json();
-        })
-        .catch((error) => error);
-      this.serverData = response;
-      this.sortDB();
-      this.toggleVisible(this.serverCards.querySelector("#spinner-2"), false);
-      this.toggleVisible(this.serverCards.querySelector("#server-items"), true);
-    };
-    fetchIt();
+    (async () => this.fetchResults)();
+    this.sortDB();
+    this.createList();
+    this.toggleVisible(this.serverCards.querySelector("#spinner-2"), false);
+    this.toggleVisible(this.serverCards.querySelector("#server-items"), true);
+  }
+
+  async fetchResults() {
+    let url = `http://localhost:5050/getFibonacciResults`;
+    let response = await fetch(url)
+      .then(async (response) => {
+        if (response.ok) return response.json();
+      })
+      .catch((error) => error);
+    this.serverData = response;
   }
 
   sortDB() {
@@ -71,10 +73,9 @@ class CalculateFibonacci {
         });
         break;
     }
-    this.createList();
   }
 
-  createList = (data) => {
+  createList = () => {
     this.serverCards.querySelector("#server-items").innerHTML = "";
     if (this.serverData.length) {
       for (let number of this.serverData) {
@@ -96,35 +97,50 @@ class CalculateFibonacci {
   };
 
   calculateNumber = async () => {
-    this.toggleVisible(this.cardBody, false);
-    this.toggleVisible(this.spinner, true);
-    const shouldUseServer = this.shouldUseServer();
-    const isInputLessthan50 = this.checkInputLessThan50();
+    const {
+      cardBody,
+      spinner,
+      input,
+      toggleVisible,
+      shouldUseServer,
+      checkInputLessThan50,
+      callServer,
+      showDBTable,
+      uselocal,
+      raiseMax50Error,
+      checkCardBodyStatus,
+      fillText,
+    } = this;
+    toggleVisible(cardBody, false);
+    toggleVisible(sinner, true);
+    const shouldUseServer = shouldUseServer();
+    const isInputLessthan50 = checkInputLessThan50();
 
     if (isInputLessthan50) {
       if (shouldUseServer) {
-        await this.callServer(this.input.value);
-        this.showDBTable();
+        await callServer(input.value);
+        showDBTable();
       } else {
-        this.uselocal();
+        uselocal();
       }
     } else {
-      this.raiseMax50Error();
+      raiseMax50Error();
     }
 
-    this.toggleVisible(this.spinner, false); //turn on
-    this.fillText();
-    this.checkCardBodyStatus();
+    toggleVisible(spinner, false); //turn on
+    fillText();
+    checkCardBodyStatus();
   };
 
   fillText() {
-    if (typeof this.fiboResponse === "string") {
-      this.cardText.innerHTML = this.fiboResponse;
-    } else if (this.fiboResponse.result) {
-      this.cardText.innerHTML = `The Fibonacci number of <strong>${this.fiboResponse.number}</strong> is:
-      <strong>${this.fiboResponse.result}</strong>`;
+    const { fiboResponse, cardText } = this;
+    if (typeof fiboResponse === "string") {
+      this.cardText.innerText = fiboResponse;
+    } else if (fiboResponse.result) {
+      this.cardText.innerText = `The Fibonacci number of <strong>${fiboResponse.number}</strong> is:
+      <strong>${fiboResponse.result}</strong>`;
     } else {
-      this.cardText.innerHTML = "Please insert an integer number";
+      cardText.innerText = "Please insert an integer number";
     }
   }
 
@@ -134,7 +150,7 @@ class CalculateFibonacci {
   };
 
   checkInputLessThan50 = () => {
-    return this.input.value <= 50 ? true : false;
+    return this.input.value <= 50;
   };
 
   raiseMax50Error = () => {
@@ -142,46 +158,42 @@ class CalculateFibonacci {
   };
 
   toggleVisible = (element, bool) => {
-    if (bool) {
-      element.classList.remove("d-none");
-    } else {
-      element.classList.add("d-none");
-    }
+    if (bool) element.classList.remove("d-none");
+    else element.classList.add("d-none");
   };
 
   shouldUseServer = () => {
-    return this.useServer.checked ? true : false;
+    return this.useServer.checked;
   };
 
   uselocal = async () => {
-    if (this.input.value > 0) {
-      let results = this.calculateFibonacci(this.input.value);
-      this.fiboResponse = {
-        number: parseInt(this.input.value),
+    const {input, calculateFibonacci, fiboResponse}
+    if (input.value > 0) {
+      let results = calculateFibonacci(input.value);
+      fiboResponse = {
+        number: parseInt(input.value),
         result: results,
         createdDate: Date.now(),
       };
     } else {
-      this.fiboResponse = "Number must be equal or higher than 0";
+      fiboResponse = "Number must be equal or higher than 0";
     }
   };
 
-  calculateFibonacci = (n) => {
-    if (n < 2) {
-      return n;
-    }
-    return this.calculateFibonacci(n - 1) + this.calculateFibonacci(n - 2);
-  };
+  calculateFibonacci(n, memo) {
+    memo = memo || {};
+    if (n in memo) return memo[n];
+    if (n === 0) return 0;
+    if (n <= 1) return 1;
+    return (memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo));
+  }
 
   callServer = async (number) => {
     let url = `http://localhost:5050/fibonacci/${number}`;
     this.fiboResponse = await fetch(url)
       .then(async (response) => {
-        if (response.ok) {
-          return response.json();
-        } else if (response.status === 400) {
-          return response.text();
-        }
+        if (response.ok) return response.json();
+        else if (response.status === 400) return response.text()
       })
       .catch((error) => {
         console.log(error);

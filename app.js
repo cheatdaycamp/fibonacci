@@ -48,7 +48,6 @@ app.get("/fibonacci/:number", async (req, res) => {
   if (number < 0) return res.status(400).send("number can't be smaller than 0");
   const result = fibonacci(number);
   const payload = { number, result, createdDate: Date.now() };
-  console.log(payload);
   MongoClient.connect(url, (err, db) => {
     if (err) throw err;
     const dbo = db.db(dbName);
@@ -69,7 +68,6 @@ app.get("/getFibonacciResults", async (req, res) => {
       .find()
       .toArray((err, docs) => {
         if (err) throw err;
-        console.log(docs);
         return res.status(200).send(docs);
       });
   });

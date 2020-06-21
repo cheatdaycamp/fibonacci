@@ -15,7 +15,7 @@ const url = `mongodb://localhost:27017/${dbName}`;
 //connecting
 MongoClient.connect(url, function (err, db) {
   if (err) throw err;
-  var dbo = db.db(dbName);
+  const dbo = db.db(dbName);
   dbo.createCollection(collection, function (err, res) {
     if (err) throw err;
     console.log("Collection created!");

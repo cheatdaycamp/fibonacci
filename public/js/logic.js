@@ -44,12 +44,13 @@ class CalculateFibonacci {
 
   fetchResults = async () => {
     let url = `http://localhost:5050/getFibonacciResults`;
-    let response = await fetch(url)
-      .then((response) => {
-        if (response.ok) return response.json();
-      })
-      .catch((error) => error);
-    this.serverData = response;
+    let response;
+    try {
+      let response = await fetch(url);
+      this.serverData = await response.json();
+    } catch (error) {
+      this.serverData = error.message;
+    }
   };
 
   sortDB = () => {
@@ -128,13 +129,9 @@ class CalculateFibonacci {
       if (shouldUseServer()) {
         await callServer(input.value);
         showDBTable();
-      } else {
-        uselocal();
-      }
-    } else {
-      raiseMax50Error();
-    }
-    toggleVisible(spinner, false); //turn on
+      } else uselocal();
+    } else raiseMax50Error();
+    toggleVisible(spinner, false);
     fillText();
     checkCardBodyStatus();
   };
@@ -171,7 +168,7 @@ class CalculateFibonacci {
 
   uselocal = async () => {
     const { input, calculateFibonacci, fiboResponse } = this;
-    if (input.value > 0) {
+    if (input.value >= 0) {
       let results = calculateFibonacci(input.value);
       fiboResponse = {
         number: parseInt(input.value),
@@ -194,10 +191,9 @@ class CalculateFibonacci {
     this.fiboResponse = await fetch(url)
       .then(async (response) => {
         if (response.ok) return response.json();
-        else if (response.status === 400) return response.text();
+        else return response.text();
       })
       .catch((error) => {
-        console.log(error);
         return "Server not in use";
       });
   };

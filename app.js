@@ -64,17 +64,21 @@ app.get("/fibonacci/:number", async (req, res) => {
 
 app.get("/getFibonacciResults", async (req, res) => {
   await wait(600);
-  data = await MongoClient.connect(url, (err, client) => {
-    if (err) throw err;
-    const dbo = client.db(dbName);
-    dbo
-      .collection(collection)
-      .find()
-      .toArray((err, docs) => {
-        if (err) throw err;
-        return res.status(200).send(docs);
-      });
-  });
+  data = await MongoClient.connect(
+    url,
+    { useUnifiedTopology: true, useNewUrlParser: true },
+    (err, client) => {
+      if (err) throw err;
+      const dbo = client.db(dbName);
+      dbo
+        .collection(collection)
+        .find()
+        .toArray((err, docs) => {
+          if (err) throw err;
+          return res.status(200).send(docs);
+        });
+    }
+  );
 });
 
 app.get("/", (req, res) => {
@@ -83,5 +87,7 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}.\n http://localhost:5050 \nPress Ctrl+C to quit.`);
+  console.log(
+    `App listening on port ${PORT}.\n http://localhost:5050 \nPress Ctrl+C to quit.`
+  );
 });

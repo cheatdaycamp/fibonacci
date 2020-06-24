@@ -21,7 +21,12 @@ class CalculateFibonacci {
     this.button.addEventListener("click", this.calculateNumber);
     this.input.addEventListener("change", this.checkString);
     this.input.addEventListener("keyup", this.checkString);
-    this.sortBy.addEventListener("change", this.sortDB.bind(this));
+    this.sortBy.addEventListener(
+      "change",
+      function () {
+        this.sortDB(), this.createList();
+      }.bind(this)
+    );
     this.showDBTable();
   }
 
@@ -120,8 +125,6 @@ class CalculateFibonacci {
       raiseMax50Error,
       checkCardBodyStatus,
       fillText,
-      sortDB,
-      createList,
     } = this;
     toggleVisible(cardBody, false);
     toggleVisible(spinner, true);

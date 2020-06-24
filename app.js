@@ -10,7 +10,8 @@ app.use(express.static(path.join(__dirname, "public")));
 const MongoClient = mongo.MongoClient;
 const dbName = "Fibonacci";
 const collection = "RequestedNumbers";
-const url = process.env.MONGODB_URI || `mongodb://localhost:27017/${dbName}`;
+const url =
+  process.env.MONGODB_URI || DB_CONNECTION || `mongodb://localhost:27017/${dbName}`;
 
 //connecting
 MongoClient.connect(

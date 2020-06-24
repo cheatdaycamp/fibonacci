@@ -10,18 +10,22 @@ app.use(express.static(path.join(__dirname, "public")));
 const MongoClient = mongo.MongoClient;
 const dbName = "Fibonacci";
 const collection = "RequestedNumbers";
-const url = `mongodb://localhost:27017/${dbName}`;
+const url = process.env.MONGODB_URI || `mongodb://localhost:27017/${dbName}`;
 
 //connecting
-MongoClient.connect(url, function (err, db) {
-  if (err) throw err;
-  const dbo = db.db(dbName);
-  dbo.createCollection(collection, function (err, res) {
+MongoClient.connect(
+  url,
+  { useUnifiedTopology: true, useNewUrlParser: true },
+  function (err, db) {
     if (err) throw err;
-    console.log("Collection created!");
-    db.close();
-  });
-});
+    const dbo = db.db(dbName);
+    dbo.createCollection(collection, function (err, res) {
+      if (err) throw err;
+      console.log("Collection created!");
+      db.close();
+    });
+  }
+);
 
 function wait(time) {
   return new Promise((resolve) => {
@@ -79,5 +83,5 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}. \nPress Ctrl+C to quit.`);
+  console.log(`App listening on port ${PORT}.\n http://localhost:5050 \nPress Ctrl+C to quit.`);
 });

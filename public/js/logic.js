@@ -190,7 +190,8 @@ class CalculateFibonacci {
   }
 
   callServer = async (number) => {
-    let url = `http://localhost:5050/fibonacci/${number}`;
+
+    let url = `${window.location.origin}/fibonacci/${number}`;
     this.fiboResponse = await fetch(url)
       .then(async (response) => {
         if (response.ok) return response.json();

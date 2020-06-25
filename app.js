@@ -3,15 +3,15 @@ const app = express();
 const cors = require("cors");
 const mongo = require("mongodb");
 const path = require("path");
+require("dotenv").config();
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
 const MongoClient = mongo.MongoClient;
-const dbName = "Fibonacci";
+const dbName = "heroku_h836xdv3";
 const collection = "RequestedNumbers";
-const url =
-  process.env.MONGODB_URI || DB_CONNECTION || `mongodb://localhost:27017/${dbName}`;
+const url = process.env.MONGODB_URI || process.env.DB_CONNECTION;
 
 //connecting
 MongoClient.connect(
@@ -53,14 +53,18 @@ app.get("/fibonacci/:number", async (req, res) => {
   if (number < 0) return res.status(400).send("number can't be smaller than 0");
   const result = fibonacci(number);
   const payload = { number, result, createdDate: Date.now() };
-  MongoClient.connect(url, (err, db) => {
-    if (err) throw err;
-    const dbo = db.db(dbName);
-    dbo.collection(collection).insertOne(payload, (err, response) => {
+  MongoClient.connect(
+    url,
+    { useUnifiedTopology: true, useNewUrlParser: true },
+    (err, db) => {
       if (err) throw err;
-      return res.status(200).send(response.ops[0]);
-    });
-  });
+      const dbo = db.db(dbName);
+      dbo.collection(collection).insertOne(payload, (err, response) => {
+        if (err) throw err;
+        return res.status(200).send(response.ops[0]);
+      });
+    }
+  );
 });
 
 app.get("/getFibonacciResults", async (req, res) => {
@@ -88,7 +92,5 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
-  console.log(
-    `App listening on port ${PORT}.\n http://localhost:5050 \nPress Ctrl+C to quit.`
-  );
+  console.log(`App listening on port ${PORT}. \nPress Ctrl+C to quit.`);
 });

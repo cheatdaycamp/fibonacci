@@ -48,8 +48,7 @@ class CalculateFibonacci {
   };
 
   fetchResults = async () => {
-    let url = `http://localhost:5050/getFibonacciResults`;
-    let response;
+    let url = `${window.location.origin}/getFibonacciResults`;
     try {
       let response = await fetch(url);
       this.serverData = await response.json();
@@ -65,6 +64,7 @@ class CalculateFibonacci {
       toggleVisible(spinner, false);
       return;
     }
+    console.log(serverData)
     switch (shouldSortBy) {
       case "Asc date":
         serverData.sort((a, b) => {

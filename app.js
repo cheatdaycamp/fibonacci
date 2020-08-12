@@ -9,8 +9,8 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
 const MongoClient = mongo.MongoClient;
-const dbName = "heroku_h836xdv3";
-const collection = "RequestedNumbers";
+const dbName = "fiboSearches";
+const collection = "requestedNumbers";
 const url = process.env.MONGODB_URI || process.env.DB_CONNECTION;
 
 //connecting

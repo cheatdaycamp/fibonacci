@@ -1,6 +1,6 @@
 # Fibonacci
 ## Exercise requirements underneath. Added backend in node.js && express. Succesfully deployed in:
-## https://fibonacciitc.herokuapp.com/
+## https://itcfiboapp.herokuapp.com/
 
 ## Exercise: Javascript Project 1
 
